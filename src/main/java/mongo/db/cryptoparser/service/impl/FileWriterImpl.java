@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import mongo.db.cryptoparser.service.FileWriter;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FileWriterImpl implements FileWriter {
     @Override
     public void writeDataToFile(String report, String filePath) {

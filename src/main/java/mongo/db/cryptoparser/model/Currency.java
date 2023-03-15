@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Currency {
     @Id
     private BigInteger id;
-    private double lprice;
-    private String curr1;
-    private String curr2;
+    private double price;
+    private String cryptoCurrency;
+    private String fiatCurrency;
 }

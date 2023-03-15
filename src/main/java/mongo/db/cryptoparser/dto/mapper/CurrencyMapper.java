@@ -1,7 +1,7 @@
 package mongo.db.cryptoparser.dto.mapper;
 
 import mongo.db.cryptoparser.dto.ApiCurrencyDto;
-import mongo.db.cryptoparser.dto.ApiCurrencyResponseDto;
+import mongo.db.cryptoparser.dto.CurrencyDto;
 import mongo.db.cryptoparser.model.Currency;
 import org.springframework.stereotype.Component;
 
@@ -9,18 +9,26 @@ import org.springframework.stereotype.Component;
 public class CurrencyMapper {
     public Currency toModel(ApiCurrencyDto apiCurrencyDto) {
         Currency currency = new Currency();
-        currency.setLprice(apiCurrencyDto.getLprice());
-        currency.setCurr1(apiCurrencyDto.getCurr1());
-        currency.setCurr2(apiCurrencyDto.getCurr2());
+        currency.setPrice(apiCurrencyDto.getPrice());
+        currency.setCryptoCurrency(apiCurrencyDto.getCryptoCurrency());
+        currency.setFiatCurrency(apiCurrencyDto.getFiatCurrency());
         return currency;
     }
 
-    public ApiCurrencyResponseDto toDto(Currency currency) {
-        ApiCurrencyResponseDto apiCurrencyResponseDto = new ApiCurrencyResponseDto();
+    public Currency toModel(CurrencyDto currencyDto) {
+        Currency currency = new Currency();
+        currency.setPrice(currencyDto.getPrice());
+        currency.setCryptoCurrency(currencyDto.getCryptoCurrency());
+        currency.setFiatCurrency(currencyDto.getFiatCurrency());
+        return currency;
+    }
+
+    public CurrencyDto toDto(Currency currency) {
+        CurrencyDto apiCurrencyResponseDto = new CurrencyDto();
         apiCurrencyResponseDto.setId(currency.getId());
-        apiCurrencyResponseDto.setLprice(currency.getLprice());
-        apiCurrencyResponseDto.setCurr1(currency.getCurr1());
-        apiCurrencyResponseDto.setCurr2(currency.getCurr2());
+        apiCurrencyResponseDto.setPrice(currency.getPrice());
+        apiCurrencyResponseDto.setCryptoCurrency(currency.getCryptoCurrency());
+        apiCurrencyResponseDto.setFiatCurrency(currency.getFiatCurrency());
         return apiCurrencyResponseDto;
     }
 }

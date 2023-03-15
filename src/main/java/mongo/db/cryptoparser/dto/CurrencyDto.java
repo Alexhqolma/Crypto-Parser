@@ -4,9 +4,9 @@ import java.math.BigInteger;
 import lombok.Data;
 
 @Data
-public class ApiCurrencyResponseDto {
+public class CurrencyDto {
     private BigInteger id;
-    private double lprice;
-    private String curr1;
-    private String curr2;
+    private double price;
+    private String cryptoCurrency;
+    private String fiatCurrency;
 }

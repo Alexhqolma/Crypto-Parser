@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface CurrencyRepository extends MongoRepository<Currency, Long> {
-    List<Currency> findByCurr1(String curr1);
+    List<Currency> findByCryptoCurrencyOrderByPriceAsc(String curr1);
 
-    Page<Currency> findByCurr1(String curr1, Pageable pageable);
+    Page<Currency> findByCryptoCurrencyOrderByPriceAsc(String curr1, Pageable pageable);
 }
