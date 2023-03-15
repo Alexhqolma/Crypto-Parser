@@ -1,14 +1,12 @@
 package mongo.db.cryptoparser.service.impl;
 
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-import jakarta.servlet.ServletContext;
 import mongo.db.cryptoparser.dto.ApiCurrencyDto;
 import mongo.db.cryptoparser.dto.CurrencyDto;
 import mongo.db.cryptoparser.dto.mapper.CurrencyMapper;
@@ -16,7 +14,11 @@ import mongo.db.cryptoparser.exception.InvalidCurrencyException;
 import mongo.db.cryptoparser.model.Currency;
 import mongo.db.cryptoparser.model.ReportRow;
 import mongo.db.cryptoparser.repository.CurrencyRepository;
-import mongo.db.cryptoparser.service.*;
+import mongo.db.cryptoparser.service.CurrencyService;
+import mongo.db.cryptoparser.service.FileWriter;
+import mongo.db.cryptoparser.service.HttpClient;
+import mongo.db.cryptoparser.service.MediaTypeUtils;
+import mongo.db.cryptoparser.service.ReportGenerator;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,13 +30,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CurrencyServiceImpl implements CurrencyService {
+    private static final String WRITE_TO = "src/main/resources/result.csv";
+    private static final String BTC = "BTC";
+    private static final String ETH = "ETH";
+    private static final String XRP = "XRP";
     private final CurrencyRepository currencyRepository;
     private final HttpClient httpClient;
     private final CurrencyMapper currencyMapper;
-    private final static String WRITE_TO = "src/main/resources/result.csv";
-    private final static String BTC = "BTC";
-    private final static String ETH = "ETH";
-    private final static String XRP = "XRP";
     private final FileWriter fileWriter;
     private final ReportGenerator reportGenerator;
     private final ServletContext servletContext;
@@ -118,7 +120,8 @@ public class CurrencyServiceImpl implements CurrencyService {
     @Override
     public List<CurrencyDto> getAll(String currencyName, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<Currency> list = currencyRepository.findByCryptoCurrencyOrderByPriceAsc(currencyName, pageRequest);
+        Page<Currency> list = currencyRepository
+                .findByCryptoCurrencyOrderByPriceAsc(currencyName, pageRequest);
         return list.stream().map(currencyMapper::toDto).toList();
     }
 

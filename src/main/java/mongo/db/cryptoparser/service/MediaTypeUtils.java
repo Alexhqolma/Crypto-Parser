@@ -5,7 +5,8 @@ import org.springframework.http.MediaType;
 
 public class MediaTypeUtils {
 
-    public static MediaType getMediaTypeForFileName(ServletContext servletContext, String fileName) {
+    public static MediaType getMediaTypeForFileName(ServletContext servletContext,
+                                                    String fileName) {
         String mineType = servletContext.getMimeType(fileName);
         try {
             return MediaType.parseMediaType(mineType);
