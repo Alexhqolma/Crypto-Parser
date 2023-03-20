@@ -2,17 +2,17 @@ package mongo.db.cryptoparser.service;
 
 import java.io.FileNotFoundException;
 import java.util.List;
-import mongo.db.cryptoparser.dto.CurrencyDto;
+import mongo.db.cryptoparser.model.Currency;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 
 public interface CurrencyService {
 
-    CurrencyDto getMinPrice(String currencyName);
+    Currency getMinPrice(String currencyName);
 
-    CurrencyDto getMaxPrice(String currencyName);
+    Currency getMaxPrice(String currencyName);
 
-    List<CurrencyDto> getAll(String currencyName, int page, int size);
+    List<Currency> getAll(String currencyName, int page, int size);
 
     String createCsvFile();
 

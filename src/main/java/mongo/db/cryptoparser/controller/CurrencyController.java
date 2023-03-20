@@ -3,8 +3,10 @@ package mongo.db.cryptoparser.controller;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import jakarta.validation.Valid;
+import mongo.db.cryptoparser.dto.CurrencyDto;
 import mongo.db.cryptoparser.dto.mapper.CurrencyMapper;
-import mongo.db.cryptoparser.model.Currency;
 import mongo.db.cryptoparser.service.CurrencyService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
@@ -26,23 +28,23 @@ public class CurrencyController {
     }
 
     @GetMapping("/minprice")
-    public Currency getMinPrice(@RequestParam("name") String currencyName) {
-        return currencyMapper.toModel(currencyService.getMinPrice(currencyName));
+    public CurrencyDto getMinPrice(@Valid @RequestParam("name") String currencyName) {
+        return currencyMapper.toDto(currencyService.getMinPrice(currencyName));
     }
 
     @GetMapping("/maxprice")
-    public Currency getMaxPrice(@RequestParam("name") String currencyName) {
-        return currencyMapper.toModel(currencyService.getMaxPrice(currencyName));
+    public CurrencyDto getMaxPrice(@Valid @RequestParam("name") String currencyName) {
+        return currencyMapper.toDto(currencyService.getMaxPrice(currencyName));
     }
 
     @GetMapping
-    public List<Currency> getAll(
+    public List<CurrencyDto> getAll(
             @RequestParam("name") String currencyName,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
         return currencyService.getAll(currencyName, page, size)
                 .stream()
-                .map(currencyMapper::toModel)
+                .map(currencyMapper::toDto)
                 .collect(Collectors.toList());
     }
 

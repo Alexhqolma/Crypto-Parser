@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import mongo.db.cryptoparser.dto.ApiCurrencyDto;
 import mongo.db.cryptoparser.dto.CurrencyDto;
 import mongo.db.cryptoparser.dto.mapper.CurrencyMapper;
@@ -68,13 +69,13 @@ public class CurrencyServiceImpl implements CurrencyService {
     }
 
     @Override
-    public CurrencyDto getMinPrice(String currencyName) {
+    public Currency getMinPrice(String currencyName) {
         currencyName = currencyName.toUpperCase();
         if (currencyName.equals(BTC)
                 || currencyName.equals(ETH)
                 || currencyName.equals(XRP)) {
-            List<CurrencyDto> list = getCurrency(currencyName);
-            CurrencyDto api = getBasicObject(list);
+            List<Currency> list = getCurrency(currencyName);
+            Currency api = getBasicObject(list);
             double min = list.get(0).getPrice();
             for (int i = 0; i < list.size(); i++) {
                 if (min > list.get(i).getPrice()) {
@@ -93,13 +94,13 @@ public class CurrencyServiceImpl implements CurrencyService {
     }
 
     @Override
-    public CurrencyDto getMaxPrice(String currencyName) {
+    public Currency getMaxPrice(String currencyName) {
         currencyName = currencyName.toUpperCase();
         if (currencyName.equals(BTC)
                 || currencyName.equals(ETH)
                 || currencyName.equals(XRP)) {
-            List<CurrencyDto> list = getCurrency(currencyName);
-            CurrencyDto api = getBasicObject(list);
+            List<Currency> list = getCurrency(currencyName);
+            Currency api = getBasicObject(list);
             double max = list.get(0).getPrice();
             for (int i = 0; i < list.size(); i++) {
                 if (max < list.get(i).getPrice()) {
@@ -118,11 +119,12 @@ public class CurrencyServiceImpl implements CurrencyService {
     }
 
     @Override
-    public List<CurrencyDto> getAll(String currencyName, int page, int size) {
+    public List<Currency> getAll(String currencyName, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Currency> list = currencyRepository
                 .findByCryptoCurrencyOrderByPriceAsc(currencyName, pageRequest);
-        return list.stream().map(currencyMapper::toDto).toList();
+        return list.stream().map(currencyMapper::toDto).toList()
+                .stream().map(currencyMapper::toModel).collect(Collectors.toList());
     }
 
     @Override
@@ -143,19 +145,17 @@ public class CurrencyServiceImpl implements CurrencyService {
                 .body(resource);
     }
 
-    private List<CurrencyDto> getCurrency(String currencyName) {
-        return currencyRepository.findByCryptoCurrencyOrderByPriceAsc(currencyName).stream()
-                .map(currencyMapper::toDto)
-                .toList();
+    private List<Currency> getCurrency(String currencyName) {
+        return currencyRepository.findByCryptoCurrencyOrderByPriceAsc(currencyName);
     }
 
-    private CurrencyDto getBasicObject(List<CurrencyDto> list) {
+    private Currency getBasicObject(List<Currency> list) {
         CurrencyDto api = new CurrencyDto();
         api.setId(list.get(0).getId());
         api.setCryptoCurrency(list.get(0).getCryptoCurrency());
         api.setFiatCurrency(list.get(0).getFiatCurrency());
         api.setPrice(list.get(0).getPrice());
-        return api;
+        return currencyMapper.toModel(api);
     }
 
     private ReportRow getCurrencyModel(String currency) {
