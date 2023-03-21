@@ -16,5 +16,5 @@ public interface CurrencyService {
 
     String createCsvFile();
 
-    ResponseEntity<InputStreamResource> createFileReport() throws FileNotFoundException;
+    ResponseEntity<InputStreamResource> createFileReport();
 }

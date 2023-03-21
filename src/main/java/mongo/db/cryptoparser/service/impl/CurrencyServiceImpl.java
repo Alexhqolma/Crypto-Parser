@@ -6,7 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import mongo.db.cryptoparser.dto.ApiCurrencyDto;
 import mongo.db.cryptoparser.dto.CurrencyDto;
@@ -20,6 +22,7 @@ import mongo.db.cryptoparser.service.FileWriter;
 import mongo.db.cryptoparser.service.HttpClient;
 import mongo.db.cryptoparser.service.MediaTypeUtils;
 import mongo.db.cryptoparser.service.ReportGenerator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,15 +35,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurrencyServiceImpl implements CurrencyService {
     private static final String WRITE_TO = "src/main/resources/result.csv";
-    private static final String BTC = "BTC";
-    private static final String ETH = "ETH";
-    private static final String XRP = "XRP";
+    private static final Set<String> currencies = Set.of("BTC", "ETH", "XRP");
     private final CurrencyRepository currencyRepository;
     private final HttpClient httpClient;
     private final CurrencyMapper currencyMapper;
     private final FileWriter fileWriter;
     private final ReportGenerator reportGenerator;
     private final ServletContext servletContext;
+    @Value("${api.url}")
+    private String apiUrl;
 
     public CurrencyServiceImpl(CurrencyRepository currencyRepository,
                                HttpClient httpClient,
@@ -58,11 +61,9 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     @Scheduled(cron = "*/10 * * * * ?")
     public void syncExternalCurrencyBtc() {
-        String currency;
-        for (int i = 0; i < 3; i++) {
-            currency = (i == 0) ? BTC : (i == 1) ? ETH : XRP;
+        for (String currency: currencies) {
             ApiCurrencyDto apiCurrencyDto =
-                    httpClient.get("https://cex.io/api/last_price/" + currency + "/USD",
+                    httpClient.get(apiUrl + currency + "/USD",
                             ApiCurrencyDto.class);
             currencyRepository.save(currencyMapper.toModel(apiCurrencyDto));
         }
@@ -71,19 +72,17 @@ public class CurrencyServiceImpl implements CurrencyService {
     @Override
     public Currency getMinPrice(String currencyName) {
         currencyName = currencyName.toUpperCase();
-        if (currencyName.equals(BTC)
-                || currencyName.equals(ETH)
-                || currencyName.equals(XRP)) {
+        if (currencies.contains(currencyName)) {
             List<Currency> list = getCurrency(currencyName);
             Currency api = getBasicObject(list);
             double min = list.get(0).getPrice();
-            for (int i = 0; i < list.size(); i++) {
-                if (min > list.get(i).getPrice()) {
-                    min = list.get(i).getPrice();
-                    api.setId(list.get(i).getId());
-                    api.setCryptoCurrency(list.get(i).getCryptoCurrency());
-                    api.setFiatCurrency(list.get(i).getFiatCurrency());
-                    api.setPrice(list.get(i).getPrice());
+            for (Currency currency : list) {
+                if (min > currency.getPrice()) {
+                    min = currency.getPrice();
+                    api.setId(currency.getId());
+                    api.setCryptoCurrency(currency.getCryptoCurrency());
+                    api.setFiatCurrency(currency.getFiatCurrency());
+                    api.setPrice(currency.getPrice());
 
                 }
             }
@@ -96,19 +95,17 @@ public class CurrencyServiceImpl implements CurrencyService {
     @Override
     public Currency getMaxPrice(String currencyName) {
         currencyName = currencyName.toUpperCase();
-        if (currencyName.equals(BTC)
-                || currencyName.equals(ETH)
-                || currencyName.equals(XRP)) {
+        if (currencies.contains(currencyName)) {
             List<Currency> list = getCurrency(currencyName);
             Currency api = getBasicObject(list);
             double max = list.get(0).getPrice();
-            for (int i = 0; i < list.size(); i++) {
-                if (max < list.get(i).getPrice()) {
-                    max = list.get(i).getPrice();
-                    api.setId(list.get(i).getId());
-                    api.setCryptoCurrency(list.get(i).getCryptoCurrency());
-                    api.setFiatCurrency(list.get(i).getFiatCurrency());
-                    api.setPrice(list.get(i).getPrice());
+            for (Currency currency : list) {
+                if (max < currency.getPrice()) {
+                    max = currency.getPrice();
+                    api.setId(currency.getId());
+                    api.setCryptoCurrency(currency.getCryptoCurrency());
+                    api.setFiatCurrency(currency.getFiatCurrency());
+                    api.setPrice(currency.getPrice());
 
                 }
             }
@@ -134,10 +131,15 @@ public class CurrencyServiceImpl implements CurrencyService {
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> createFileReport() throws FileNotFoundException {
+    public ResponseEntity<InputStreamResource> createFileReport() {
         MediaType mediaType = MediaTypeUtils.getMediaTypeForFileName(this.servletContext, WRITE_TO);
         File file = new File(WRITE_TO);
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+        InputStreamResource resource = null;
+        try {
+            resource = new InputStreamResource(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Can't find file " + e);
+        }
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + file.getName())
                 .contentType(mediaType)
@@ -168,9 +170,9 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     private List<ReportRow> getReportList() {
         List<ReportRow> list = new ArrayList<>();
-        list.add(getCurrencyModel(BTC));
-        list.add(getCurrencyModel(ETH));
-        list.add(getCurrencyModel(XRP));
+        for (String currency : currencies) {
+            list.add(getCurrencyModel(currency));
+        }
         return list;
     }
 }

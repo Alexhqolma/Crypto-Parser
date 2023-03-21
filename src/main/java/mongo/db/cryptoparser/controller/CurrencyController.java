@@ -49,7 +49,7 @@ public class CurrencyController {
     }
 
     @GetMapping("/csv")
-    public ResponseEntity<InputStreamResource> createFileReport() throws FileNotFoundException {
+    public ResponseEntity<InputStreamResource> createFileReport() {
         currencyService.createCsvFile();
         return currencyService.createFileReport();
     }
