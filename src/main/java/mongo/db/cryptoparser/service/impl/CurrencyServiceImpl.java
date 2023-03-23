@@ -138,7 +138,7 @@ public class CurrencyServiceImpl implements CurrencyService {
         try {
             resource = new InputStreamResource(new FileInputStream(file));
         } catch (FileNotFoundException e) {
-            throw new RuntimeException("Can't find file " + e);
+            throw new RuntimeException("Can't find file ", e);
         }
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + file.getName())
